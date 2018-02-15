@@ -23,8 +23,7 @@ int main() {
 
     }
 
-    //queue?
-    
+    //queue? lage dobbel array, med for hver etasje: opp, ned, inni heis, "clean" ifølge studass   
 
 
 

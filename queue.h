@@ -1,0 +1,1 @@
+void add_queue_elm(int floor, int dir);
