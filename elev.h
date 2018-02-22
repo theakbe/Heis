@@ -8,6 +8,8 @@
 
 // Number of floors
 #define N_FLOORS 4
+// Number of signals and lamps on a per-floor basis (excl sensor)
+#define N_BUTTONS 3
 
 
 

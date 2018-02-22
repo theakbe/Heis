@@ -1,5 +1,8 @@
 #include "elev.h"
 #include <stdio.h>
+#include "elevator.h"
+#include "queue.h"
+
 
 
 int main() {
@@ -13,6 +16,24 @@ int main() {
 
     //Go to initial position
     initialize();
+
+    while(1){
+        // sjekk knapper
+            // evt. gjør noe
+        
+        // sjekk floor
+            // sejkke om ny motor dir
+
+        // sjekke Emergency
+
+        // evt mer?
+        //floor_light();
+        check_buttons();
+        check_queue();
+        check_floor();
+        drive();
+    }
+    /*
     while(1){
       if(elev_get_stop_signal()==1){
         stop();
@@ -26,7 +47,7 @@ int main() {
         }
       }
     }
-
+*/
     //queue? lage dobbel array, med for hver etasje: opp, ned, inni heis, "clean" ifølge studass
 
 
