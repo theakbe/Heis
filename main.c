@@ -12,18 +12,22 @@ int main() {
     printf("Press STOP button to stop elevator and exit program.\n");
 
     //Go to initial position
-    while (1) {
-        if (elev_get_floor_sensor_signal() ==-1) {
-            elev_set_motor_direction(DIRN_DOWN);
+    initialize();
+    while(1){
+      if(elev_get_stop_signal()==1){
+        stop();
+        continue;
+      }
+      else{
+        while(1){
+          drive();
+          floor_light();
+          add_to_queue();
         }
-        else{
-            elev_set_motor_direction(DIRN_STOP);
-            break;
-        }
-
+      }
     }
 
-    //queue? lage dobbel array, med for hver etasje: opp, ned, inni heis, "clean" ifølge studass   
+    //queue? lage dobbel array, med for hver etasje: opp, ned, inni heis, "clean" ifølge studass
 
 
 
@@ -48,4 +52,3 @@ int main() {
 
     return 0;
 }
-
