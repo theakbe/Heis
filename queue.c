@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <stdlib.h>
 
+typedef int bool;
+enum {false, true};
 
 int queue[4][3] = {0};
 int dir = -1;
@@ -95,7 +97,7 @@ void check_queue(){
 }
 */
 
-int get_queue(int floor, int dir){
+int get_queue(int floor, elev_motor_direction_t dir){
 	return queue[floor][dir];
 }
 

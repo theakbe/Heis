@@ -16,6 +16,7 @@ int main() {
 
     //Go to initial position
     initialize();
+    
 
     while(1){
         // sjekk knapper
@@ -28,10 +29,10 @@ int main() {
 
         // evt mer?
         //floor_light();
+
+        stop_floor();
         check_buttons();
-        check_queue();
-        check_floor();
-        drive();
+        
     }
     /*
     while(1){

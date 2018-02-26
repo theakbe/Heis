@@ -3,37 +3,68 @@
 #include "queue.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 
+elev_motor_direction_t lastDirection= DIRN_STOP;
 
-
+/*
 void open_door(){
-	int sec = 0, trigger = 3000;
+	int sec = 0, trigger = 3;
 	clock_t before = clock();
 do {
   elev_set_motor_direction(DIRN_STOP);
   elev_set_door_open_lamp(1);
   clock_t difference = clock() - before;
-  sec = difference * 1000 / CLOCKS_PER_SEC;
+  sec = difference * 1 / CLOCKS_PER_SEC;
 } while ( sec < trigger );
 	elev_set_door_open_lamp(0);
 }
 
-elev_motor_direction_t lastDirection= DIRN_STOP;
 
+*/
+void open_door(){
+	time_t startTime = time(NULL); // return current time in seconds
+	while (time(NULL) - startTime < 3)
+	{
+    	elev_set_motor_direction(DIRN_STOP);
+  		elev_set_door_open_lamp(1);
+	}
+  	elev_set_door_open_lamp(0);
+	}
+
+/*
+void open_door(){
+	time_t start, end;
+	double elapsed;
+	time(&start);
+
+	do {
+		time(&end);
+		elapsed = difftime(end, start);
+
+		elev_set_motor_direction(DIRN_STOP);
+  		elev_set_door_open_lamp(1);
+
+	} while(elapsed < 3);
+	elev_set_door_open_lamp(0);
+}
+*/
 
 void stop_floor(){
 	int floor=elev_get_floor_sensor_signal();
 	if ((floor != -1)&&(shouldStop(floor))){
-			open_door();
-			remove_from_queue(floor,lastDirection);
+		for (elev_button_type_t dir = BUTTON_CALL_UP; dir<=BUTTON_COMMAND;dir++){
+			if (get_queue(floor,dir)==1){
+				lastDirection=dir;
+			}
 		}
-		else{
-			lastDirection=getNewDir();
-			elev_set_motor_direction(getNewDir(floor,lastDirection)); //usikker på denne
-		}
-	}
+		remove_from_queue(floor,lastDirection);
+		open_door();
 
+	elev_set_motor_direction(getNewDir(floor,lastDirection)); //usikker på denne
+	}
+}
 /*
 	for(int floor=0; floor< N_FLOORS;floor++){
 
@@ -120,7 +151,9 @@ void check_buttons(){ //sjekker gjennom, og legger bestillinger til kø
 			elev_set_button_lamp(BUTTON_COMMAND, floor, 1);
 		}
 	}
-}// nb! kan iterere gjennom enum og lage for løkke for button her
+}
+// nb! kan iterere gjennom enum og lage for løkke for button her, fiks når vi får til resten
+
 
 
 /*
