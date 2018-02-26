@@ -10,7 +10,7 @@ int queue[4][3] = {0};
 int dir = -1;
 
 void add_queue_elm(int floor, int dir){
-	queue[floor-1][dir]=1;
+	queue[floor][dir]=1;
 }
 
 void initialize_queue(){
@@ -24,8 +24,8 @@ void initialize_queue(){
 }
 
 
-elev_motor_direction_t getNewDir(int currentFloor, elev_motor_direction_t lastDirection){
 
+elev_motor_direction_t getNewDir(int currentFloor, elev_motor_direction_t lastDirection){
 	if (lastDirection == DIRN_UP){
 		for (int floor=currentFloor;floor<N_FLOORS;floor++){
 			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)){
@@ -34,7 +34,7 @@ elev_motor_direction_t getNewDir(int currentFloor, elev_motor_direction_t lastDi
 
 		}
 		//sjekk om ordre over?
-	} 
+	}
 
 	if (lastDirection == DIRN_DOWN){
 		for (int floor=0;floor<currentFloor;floor++){
@@ -45,13 +45,13 @@ elev_motor_direction_t getNewDir(int currentFloor, elev_motor_direction_t lastDi
 		}
 	}
 	for (int floor=0; floor<N_FLOORS;floor++){
-		if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)){
-				return  DIRN_DOWN;
-		}
-		if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)){
+		if (queue[floor][BUTTON_CALL_UP]==1){
 				return  DIRN_UP;
 		}
-
+		if (queue[floor][BUTTON_CALL_DOWN]==1){
+				return  DIRN_DOWN;
+		}
+// sjekker ordre under
 	}
 	//sjekk denne funksjonen
 
