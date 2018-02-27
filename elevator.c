@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <time.h>
 
-elev_motor_direction_t lastDirection= DIRN_STOP;
+//elev_motor_direction_t lastDirection= DIRN_STOP;
 
 /*
 void open_door(){
@@ -27,6 +27,7 @@ void open_door(){
 	time_t startTime = time(NULL); // return current time in seconds
 	while (time(NULL) - startTime < 3)
 	{
+		check_buttons();
     	elev_set_motor_direction(DIRN_STOP);
   		elev_set_door_open_lamp(1);
 	}
@@ -51,19 +52,22 @@ void open_door(){
 }
 */
 
-void stop_floor(){
+void drive(){
 	int floor=elev_get_floor_sensor_signal();
-	if ((floor != -1)&&(shouldStop(floor))){
+	if ((floor != -1)&&(should_stop(floor))){
+		/*
 		for (elev_button_type_t dir = BUTTON_CALL_UP; dir<=BUTTON_COMMAND;dir++){
 			if (get_queue(floor,dir)==1){
 				lastDirection=dir;
 			}
-		}
-		remove_from_queue(floor,lastDirection);
+		}*/
+		remove_from_queue(floor);
 		open_door();
-
-	elev_set_motor_direction(getNewDir(floor,lastDirection)); //usikker på denne
 	}
+	
+	printf("%d %d\n", get_new_dir(floor), get_last_direction());
+
+	elev_set_motor_direction(get_new_dir(floor)); //usikker på denne
 }
 /*
 	for(int floor=0; floor< N_FLOORS;floor++){
@@ -96,7 +100,11 @@ void stop_floor(){
 
 
 void floor_light(){
-		elev_set_floor_indicator(elev_get_floor_sensor_signal());
+	int floor = elev_get_floor_sensor_signal();
+	if(floor!=-1){
+
+		elev_set_floor_indicator(floor);
+	}
 }
 // spør studass om elev_set_floor_indicator funksjonen!!!!
 
@@ -119,16 +127,25 @@ void initialize(){
 }
 
 void stop(){
-	while(elev_get_stop_signal()==1){
-		elev_set_motor_direction(DIRN_STOP);
-		if (elev_get_floor_sensor_signal() !=-1){
-			elev_set_door_open_lamp(1);
+	if(elev_get_stop_signal()==1){
+		reset_last_direction();
+		while(elev_get_stop_signal()==1){
+			elev_set_motor_direction(DIRN_STOP);
+			if (elev_get_floor_sensor_signal() !=-1){
+				elev_set_door_open_lamp(1);
+			}
+			elev_set_stop_lamp(1);
+			for(int floor = 0; floor < N_FLOORS; floor++){
+				remove_from_queue(floor);
+			}
+
+			
 		}
-		elev_set_stop_lamp(1);
-		initialize_queue();
-	}
-	if (elev_get_floor_sensor_signal() !=-1){
-		open_door();
+		elev_set_stop_lamp(0);
+	
+		if (elev_get_floor_sensor_signal() !=-1){
+			open_door();
+		}
 	}
 }
 
@@ -136,17 +153,20 @@ void check_buttons(){ //sjekker gjennom, og legger bestillinger til kø
 	for (int floor=0;floor<N_FLOORS;floor++){
 		if (floor!=N_FLOORS-1){ //hvis vi ikke er i 4 etasje kan vi trykke på oppo-knapp
 			if (elev_get_button_signal(BUTTON_CALL_UP, floor)==1){
+				printf("up pushed\n");
 				add_queue_elm(floor,BUTTON_CALL_UP);
 				elev_set_button_lamp(BUTTON_CALL_UP, floor, 1);
 			}
 		}
 		if(floor!=0){ //hvis vi ikke er i første etasje kan vi trykke på nedknapp
 			if (elev_get_button_signal(BUTTON_CALL_DOWN, floor)==1){
+				printf("up pushed\n");
 				add_queue_elm(floor,1);
 				elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1);
 			}
 		}
 		if (elev_get_button_signal(BUTTON_COMMAND, floor)==1){
+			printf("up pushed\n");
 			add_queue_elm(floor,2);
 			elev_set_button_lamp(BUTTON_COMMAND, floor, 1);
 		}

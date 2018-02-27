@@ -30,8 +30,10 @@ int main() {
         // evt mer?
         //floor_light();
 
-        stop_floor();
+        drive();
         check_buttons();
+        floor_light();
+        stop();
         
     }
     /*

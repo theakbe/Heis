@@ -8,8 +8,9 @@
 typedef int bool;
 enum {false, true};
 
-int queue[4][3] = {0};
+int queue[N_FLOORS][N_BUTTONS] = {0};
 int dir = -1;
+static elev_motor_direction_t lastDirection=DIRN_STOP;
 
 void add_queue_elm(int floor, int dir){
 	queue[floor][dir]=1;
@@ -25,13 +26,43 @@ void initialize_queue(){
 	}
 }
 
+//returnerer true hvis køen er tom
+bool queue_empty(){
+	for (int floor=0; floor<N_FLOORS;floor++){
+		if (queue[floor][BUTTON_CALL_UP]==1){
+				return  false;
+		}
+		if (queue[floor][BUTTON_CALL_DOWN]==1){
+				return  false;
+		}
+		if (queue[floor][BUTTON_COMMAND]==1){
+				return  false;
+		}
+// legg til for-løkke istedenfor if her
+	}
+	return true;
+}
 
 
-elev_motor_direction_t getNewDir(int currentFloor, elev_motor_direction_t lastDirection){
+//finne ut om prioriteringen, skal den stoppe i 3. for ned hvis den skal opp til 4. først for ned?
+//fikse på torsdag
+elev_motor_direction_t get_new_dir(int currentFloor){
+	if (currentFloor==-1){	//problem med stop(), lastDirection blir alltid stop
+		return lastDirection;
+	}
+	if((!queue_empty())&&(currentFloor==N_FLOORS-1)){
+		lastDirection = DIRN_DOWN;
+		return DIRN_DOWN;
+	}
+	if((!queue_empty())&&(currentFloor==0)){
+		lastDirection = DIRN_UP;
+		return DIRN_UP;
+	}
 	if (lastDirection == DIRN_UP){
-		for (int floor=currentFloor;floor<N_FLOORS;floor++){
-			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)){
-				return  DIRN_UP;
+		for (int floor=currentFloor;floor<N_FLOORS;floor++){ //floor = 3
+			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)||(queue[floor][BUTTON_COMMAND]==1)){
+				return DIRN_UP;
+			
 			}
 
 		}
@@ -40,19 +71,46 @@ elev_motor_direction_t getNewDir(int currentFloor, elev_motor_direction_t lastDi
 
 	if (lastDirection == DIRN_DOWN){
 		for (int floor=0;floor<currentFloor;floor++){
-			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)){
-				return  DIRN_DOWN;
+			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)||(queue[floor][BUTTON_COMMAND]==1)){
+				return DIRN_DOWN;
 			}
 
 		}
 	}
 	for (int floor=0; floor<N_FLOORS;floor++){
 		if (queue[floor][BUTTON_CALL_UP]==1){
-				return  DIRN_UP;
+			if (currentFloor > floor) {
+				lastDirection=DIRN_DOWN;
+				return  DIRN_DOWN;
+			}
+			else {
+				lastDirection=DIRN_UP;
+				return DIRN_UP;
+			}
+			
 		}
 		if (queue[floor][BUTTON_CALL_DOWN]==1){
+			if (currentFloor > floor) {
+				lastDirection=DIRN_DOWN;
 				return  DIRN_DOWN;
+			}
+			else {
+				lastDirection=DIRN_UP;
+				return DIRN_UP;
+			}
 		}
+
+		if (queue[floor][BUTTON_COMMAND]==1){
+			if (currentFloor > floor) {
+				lastDirection=DIRN_DOWN;
+				return  DIRN_DOWN;
+			}
+			else {
+				lastDirection=DIRN_UP;
+				return DIRN_UP;
+			}
+		}
+
 // sjekker ordre under
 	}
 	//sjekk denne funksjonen
@@ -64,7 +122,7 @@ elev_motor_direction_t getNewDir(int currentFloor, elev_motor_direction_t lastDi
 	return DIRN_STOP;
 }
 
-bool shouldStop(int floor){
+bool should_stop(int floor){
 	if ((elev_get_floor_sensor_signal() == floor) && (queue[floor][BUTTON_CALL_UP] ==1)) {
 			return true;
 	}
@@ -101,13 +159,60 @@ int get_queue(int floor, elev_motor_direction_t dir){
 	return queue[floor][dir];
 }
 
-void remove_from_queue(int floor, int dir){
-	queue[floor][dir] = 0;
+void remove_from_queue(int floor){
+	if (!(floor == N_FLOORS-1) && !(floor == 0)){
+		for(elev_button_type_t button= BUTTON_CALL_UP;button<=BUTTON_COMMAND;button++){
+			queue[floor][button] = 0;
+			elev_set_button_lamp(button, floor, 0);
+			}
+		}
+
+	if (floor == N_FLOORS-1){
+		elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0);
+		elev_set_button_lamp(BUTTON_COMMAND, floor, 0);
+		queue[floor][BUTTON_CALL_DOWN] = 0;
+		queue[floor][BUTTON_COMMAND] = 0;
+	}
+
+	if (floor == 0){
+		elev_set_button_lamp(BUTTON_CALL_UP, floor, 0);
+		elev_set_button_lamp(BUTTON_COMMAND, floor, 0);
+		queue[floor][BUTTON_CALL_UP] = 0;
+		queue[floor][BUTTON_COMMAND] = 0;
+	}
+
+	
 }
 
-int get_dir(){
-	return dir;
 
+/*if (floor!=N_FLOORS-1){ //hvis vi ikke er i 4 etasje kan vi trykke på oppo-knapp
+			if (elev_get_button_signal(BUTTON_CALL_UP, floor)==1){
+				printf("up pushed\n");
+				add_queue_elm(floor,BUTTON_CALL_UP);
+				elev_set_button_lamp(BUTTON_CALL_UP, floor, 1);
+			}
+		}
+		if(floor!=0){ //hvis vi ikke er i første etasje kan vi trykke på nedknapp
+			if (elev_get_button_signal(BUTTON_CALL_DOWN, floor)==1){
+				printf("up pushed\n");
+				add_queue_elm(floor,1);
+				elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1);
+			}
+		}
+		if (elev_get_button_signal(BUTTON_COMMAND, floor)==1){
+			printf("up pushed\n");
+			add_queue_elm(floor,2);
+			elev_set_button_lamp(BUTTON_COMMAND, floor, 1);
+		}
+*/
+
+
+elev_motor_direction_t get_last_direction(){
+	return lastDirection;
+}
+
+void reset_last_direction(){
+	lastDirection = DIRN_STOP;
 }
 
 
