@@ -1,8 +1,9 @@
 
-
-void initialize();
+int get_last_floor();
 void open_door();
-void floor_light();
-void stop();
 void drive();
+void floor_light();
+void initialize();
+void stop();
 void check_buttons();
+
