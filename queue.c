@@ -43,12 +43,43 @@ bool queue_empty(){
 }
 
 
-//finne ut om prioriteringen, skal den stoppe i 3. for ned hvis den skal opp til 4. først for ned?
-//fikse på torsdag
-elev_motor_direction_t get_new_dir(int current_floor){
-	if (current_floor==-1){	
-		return last_direction;
+bool check_orders_above(int current_floor){
+	for (int floor=current_floor;floor<N_FLOORS;floor++){
+			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)||(queue[floor][BUTTON_COMMAND]==1)){
+				return true;
+			
+			}
+
 	}
+	return false;
+}
+
+bool check_orders_below(int current_floor){
+	for (int floor=0;floor<current_floor;floor++){
+			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)||(queue[floor][BUTTON_COMMAND]==1)){
+				return true;
+			}
+
+	}
+	return false;
+}
+
+elev_motor_direction_t order_placement(int current_floor, int floor){ //sjekker om heis skal gå opp eller ned for å komme til ordre
+	if (current_floor > floor) {
+			last_direction=DIRN_DOWN;
+			return  DIRN_DOWN;
+		}
+	last_direction=DIRN_UP;
+	return DIRN_UP;
+}
+
+
+
+elev_motor_direction_t get_new_dir(int current_floor){
+	/*if (current_floor==-1){	
+		return last_direction;
+	}*/
+	printf("called get new dir with floor %d and dir: %d\n", current_floor, last_direction );
 
 	if((!queue_empty())&&(current_floor==N_FLOORS-1)){
 		last_direction = DIRN_DOWN;
@@ -58,61 +89,37 @@ elev_motor_direction_t get_new_dir(int current_floor){
 		last_direction = DIRN_UP;
 		return DIRN_UP;
 	}
-	if (last_direction == DIRN_UP){
-		for (int floor=current_floor;floor<N_FLOORS;floor++){ //floor = 3
-			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)||(queue[floor][BUTTON_COMMAND]==1)){
-				return DIRN_UP;
-			
-			}
 
+	if (last_direction == DIRN_UP){
+		if (check_orders_above(current_floor)){
+			return DIRN_UP;
 		}
 	}
 
 	if (last_direction == DIRN_DOWN){
-		for (int floor=0;floor<current_floor;floor++){
-			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)||(queue[floor][BUTTON_COMMAND]==1)){
-				return DIRN_DOWN;
-			}
-
+		if (check_orders_below(current_floor)){
+			return DIRN_DOWN;
 		}
 	}
+
+
 	for (int floor=0; floor<N_FLOORS;floor++){
 		if (queue[floor][BUTTON_CALL_UP]==1){
-			if (current_floor > floor) {
-				last_direction=DIRN_DOWN;
-				return  DIRN_DOWN;
-			}
-			else {
-				last_direction=DIRN_UP;
-				return DIRN_UP;
-			}
-			
+			order_placement(current_floor, floor);
 		}
 		if (queue[floor][BUTTON_CALL_DOWN]==1){
-			if (current_floor > floor) {
-				last_direction=DIRN_DOWN;
-				return  DIRN_DOWN;
-			}
-			else {
-				last_direction=DIRN_UP;
-				return DIRN_UP;
-			}
+			order_placement(current_floor, floor);
 		}
 
 		if (queue[floor][BUTTON_COMMAND]==1){
-			if (current_floor > floor) {
-				last_direction=DIRN_DOWN;
-				return  DIRN_DOWN;
-			}
-			else {
-				last_direction=DIRN_UP;
-				return DIRN_UP;
-			}
+			order_placement(current_floor, floor);
 		}
-
 	}
+			
 	return DIRN_STOP;
 }
+
+
 
 bool should_stop(int floor){
 	if ((elev_get_floor_sensor_signal() == floor) && (queue[floor][BUTTON_COMMAND] ==1)){

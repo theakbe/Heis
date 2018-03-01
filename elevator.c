@@ -31,15 +31,23 @@ void open_door(){
 
 //mulig legge check_buttons() inni drive() for å kunne enten stoppe uten å reagere eller drive og reagere på knapper
 void drive(){
-	int floor=elev_get_floor_sensor_signal();
+	int floor = get_last_floor();
+	int lastDIr = get_last_direction();
+	int newDir = get_new_dir(floor);
+
+
 	if ((floor != -1)&&(should_stop(floor))){
 		printf("DRIVE: i want to stop in floor: %d \n", floor);
 		remove_from_queue(floor);
 		open_door();
 	}
-	
-	printf("%d %d %d \n", get_new_dir(floor), get_last_direction(), get_last_floor());
+//	printf("new dir: %d last dir: %d last floor%d \n", newDir, lastDIr, get_last_floor());
+
+	if (lastDIr != newDir){
+		printf("diffenret new %d old %d\n",newDir, lastDIr);
+	}
 	elev_set_motor_direction(get_new_dir(get_last_floor()));
+
 }
 
 
@@ -107,14 +115,14 @@ void check_buttons(){ //sjekker gjennom, og legger bestillinger til kø
 		}
 		if(floor!=0){ //hvis vi ikke er i første etasje kan vi trykke på nedknapp
 			if (elev_get_button_signal(BUTTON_CALL_DOWN, floor)==1){
-				printf("up pushed\n");
+				printf("down pushed\n");
 				add_queue_elm(floor,1);
 				elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 1);
 				
 			}
 		}
 		if (elev_get_button_signal(BUTTON_COMMAND, floor)==1){
-			printf("up pushed\n");
+			printf("command pushed\n");
 			add_queue_elm(floor,2);
 			elev_set_button_lamp(BUTTON_COMMAND, floor, 1);
 			
