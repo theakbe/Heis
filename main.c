@@ -1,7 +1,8 @@
 #include "elev.h"
 #include <stdio.h>
-#include "elevator.h"
+#include "elevatorController.h"
 #include "queue.h"
+#include "controlPanel.h"
 
 
 
@@ -11,20 +12,13 @@ int main() {
         printf("Unable to initialize elevator hardware!\n");
         return 1;
     }
-
-    printf("Press STOP button to stop elevator and exit program.\n");
-
     //Go to initial position
     initialize();
-    
-
     while(1){
         drive();
         check_buttons();
-        floor_light();
-        stop();
-        
+        current_floor_light();
+        emergancy_stop();
     }
-    
     return 0;
 }
