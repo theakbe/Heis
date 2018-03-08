@@ -10,5 +10,5 @@ elev_motor_direction_t order_placement(int current_floor, int floor);
 elev_motor_direction_t get_new_dir(int currentFloor);
 bool should_stop(int floor);
 void remove_from_queue(int floor);
-elev_motor_direction_t get_last_direction(); //trenger ikke til slutt!!
 bool check_if_order_floor(int floor);
+elev_motor_direction_t get_last_dir();

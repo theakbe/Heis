@@ -12,7 +12,6 @@ int main() {
         printf("Unable to initialize elevator hardware!\n");
         return 1;
     }
-    //Go to initial position
     initialize();
     while(1){
         drive();
