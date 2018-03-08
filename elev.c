@@ -56,7 +56,7 @@ int elev_init(void) {
 }
 
 void elev_set_motor_direction(elev_motor_direction_t dirn) {
-    printf("IO SETTER: %d \n", dirn);
+    //printf("IO SETTER: %d \n", dirn);
     if (dirn == 0){
         io_write_analog(MOTOR, 0);
     } else if (dirn > 0) {

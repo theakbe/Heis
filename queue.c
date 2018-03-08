@@ -26,15 +26,16 @@ void add_queue_elm(int floor, int dir){
 }
 
 //returnerer true hvis køen er tom
-bool check_queue_empty(){
+int check_queue_empty(){
+	int number_of_orders=0;
 	for (int floor=0; floor<N_FLOORS;floor++){
 		for (elev_button_type_t button = BUTTON_CALL_UP; button<=BUTTON_COMMAND;button++){
 			if (queue[floor][button]==1){
-					return  false;
+					number_of_orders++;
 			}
 		}
 	}
-	return true;
+	return number_of_orders;
 }
 
 
@@ -50,7 +51,7 @@ bool check_orders_above(int current_floor){
 }
 
 bool check_orders_below(int current_floor){
-	for (int floor=0;floor<current_floor;floor++){
+	for (int floor=0;floor<=current_floor;floor++){
 			if ((queue[floor][BUTTON_CALL_UP]==1)||(queue[floor][BUTTON_CALL_DOWN]==1)||(queue[floor][BUTTON_COMMAND]==1)){
 				return true;
 			}
@@ -64,17 +65,19 @@ elev_motor_direction_t order_placement(int current_floor, int order_floor){ //sj
 			last_direction=DIRN_DOWN;
 			return  DIRN_DOWN;
 		}
-	last_direction=DIRN_UP;
-	return DIRN_UP;
+	else if(current_floor < order_floor){
+			last_direction=DIRN_UP;
+			return DIRN_UP;
+		}
 }
 
 
 elev_motor_direction_t get_new_dir(int current_floor){
-	if((!check_queue_empty())&&(current_floor==N_FLOORS-1)){
+	if((check_queue_empty()!=0)&&(current_floor==N_FLOORS-1)){
 		last_direction = DIRN_DOWN;
 		return DIRN_DOWN;
 	}
-	if((!check_queue_empty())&&(current_floor==0)){
+	if((check_queue_empty()!=0)&&(current_floor==0)){
 		last_direction = DIRN_UP;
 		return DIRN_UP;
 	}
@@ -116,7 +119,16 @@ bool should_stop(int floor){
 		if ((elev_get_floor_sensor_signal() == floor) && (queue[floor][BUTTON_CALL_UP] ==1)) {
 			return true;
 		}
-	}else if (last_direction==DIRN_DOWN){
+	}
+	if (check_queue_empty()==1){
+		if ((elev_get_floor_sensor_signal() == floor) && (queue[floor][BUTTON_CALL_DOWN] ==1)) {
+			return true;
+		}
+		else if ((elev_get_floor_sensor_signal() == floor) && (queue[floor][BUTTON_CALL_UP] ==1)) {
+			return true;
+		}
+	}
+	else if (last_direction==DIRN_DOWN){
 		if ((elev_get_floor_sensor_signal() == floor) && (queue[floor][BUTTON_CALL_DOWN] ==1)) {
 			return true;
 		}
@@ -146,6 +158,16 @@ void remove_from_queue(int floor){
 	}
 }
 
+/*
+bool check_if_order_floor(int floor){
+	for(elev_button_type_t button=BUTTON_CALL_UP;button<=BUTTON_COMMAND;button++){
+		if(queue[floor][button]==1){
+			return true;
+		}
+	}
+	return false;
+}*/ 
+//trenger egt ikke
 
 elev_motor_direction_t get_last_direction(){ //fjern til slutt!!!
 	return last_direction;

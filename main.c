@@ -18,7 +18,7 @@ int main() {
         drive();
         check_buttons();
         current_floor_light();
-        emergancy_stop();
+        emergency_stop();
     }
     return 0;
 }
